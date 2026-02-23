@@ -8,6 +8,7 @@ import type { Message } from '@shared/messages';
 import { startObserver } from './observer';
 startObserver();
 
+
 /**
  * Content script initialization.
  * Runs at document_idle on claude.ai.
