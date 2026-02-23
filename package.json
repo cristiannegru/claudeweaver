@@ -1,0 +1,33 @@
+{
+  "name": "claudeweaver",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Threaded conversation management for Claude — browser extension",
+  "scripts": {
+    "dev:firefox": "vite build --watch --mode firefox",
+    "dev:chrome": "vite build --watch --mode chrome",
+    "build": "npm run build:firefox && npm run build:chrome",
+    "build:firefox": "vite build --mode firefox",
+    "build:chrome": "vite build --mode chrome",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/ --ext .ts,.tsx",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "uuid": "^10.0.0",
+    "webextension-polyfill": "^0.12.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/uuid": "^10.0.0",
+    "@types/webextension-polyfill": "^0.12.1",
+    "eslint": "^9.15.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0",
+    "vitest": "^2.1.0"
+  }
+}

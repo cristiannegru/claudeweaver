@@ -1,0 +1,41 @@
+{
+  "manifest_version": 2,
+  "name": "ClaudeWeaver",
+  "version": "0.1.0",
+  "description": "Threaded conversation management for Claude — prevent context window degradation",
+  "icons": {
+    "16": "assets/icon-16.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "downloads"
+  ],
+  "background": {
+    "scripts": ["background/service-worker.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "sidebar_action": {
+    "default_title": "ClaudeWeaver",
+    "default_panel": "sidebar.html",
+    "default_icon": "assets/icon-48.png"
+  },
+  "browser_action": {
+    "default_title": "ClaudeWeaver",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "48": "assets/icon-48.png"
+    }
+  },
+  "content_security_policy": "script-src 'self'; object-src 'self';"
+}
