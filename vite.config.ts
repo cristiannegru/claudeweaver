@@ -21,6 +21,14 @@ function copyStaticAssets() {
       if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
       copyFileSync(getManifestSource(), resolve(outDir, 'manifest.json'));
       copyFileSync('src/sidebar/sidebar.html', resolve(outDir, 'sidebar.html'));
+
+      // Copy icon assets
+      const assetsDir = resolve(outDir, 'assets');
+      if (!existsSync(assetsDir)) mkdirSync(assetsDir, { recursive: true });
+      for (const icon of ['icon-16.png', 'icon-48.png', 'icon-128.png']) {
+        const src = resolve('src/assets', icon);
+        if (existsSync(src)) copyFileSync(src, resolve(assetsDir, icon));
+      }
     },
   };
 }

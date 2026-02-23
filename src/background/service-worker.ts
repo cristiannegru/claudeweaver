@@ -16,6 +16,16 @@ import type { CheckpointStage } from '@shared/types';
 
 console.log('[ClaudeWeaver] Background service worker started');
 
+// ------- Chrome: open side panel on toolbar icon click -------
+
+if (typeof chrome !== 'undefined' && chrome.sidePanel) {
+  chrome.action.onClicked.addListener((tab) => {
+    if (tab.id != null) {
+      chrome.sidePanel.open({ tabId: tab.id });
+    }
+  });
+}
+
 // ------- Message router -------
 
 onMessage(async (msg, sender) => {
@@ -42,11 +52,6 @@ onMessage(async (msg, sender) => {
       const segments = thread ? await getSegmentsByThread(threadId) : [];
       return { type: 'THREAD_STATE', thread, segments };
     }
-
-    case 'TITLE_DETECTED':
-      console.log(`[ClaudeWeaver] Title detected: ${msg.title}`);
-      // TODO Phase 2: Update segment display_name
-      break;
 
     default:
       break;
