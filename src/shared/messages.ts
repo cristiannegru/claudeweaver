@@ -26,8 +26,7 @@ export type Message =
   | { type: 'MANUAL_CHECKPOINT' }
   | { type: 'GET_THREAD_STATE' }
   | { type: 'THREAD_STATE'; thread: Thread | null; segments: Segment[] }
-  | { type: 'NAVIGATE_SEGMENT'; segmentId: string }
-  | { type: 'TITLE_DETECTED'; title: string };
+  | { type: 'NAVIGATE_SEGMENT'; segmentId: string };
 
 // ------- Helpers -------
 
