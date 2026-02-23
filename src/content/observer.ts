@@ -15,7 +15,7 @@
  */
 
 import browser from 'webextension-polyfill';
-import { SELECTORS } from '../shared/constants';
+import { DEFAULT_SELECTORS } from '../shared/constants';
 
 // ---------------------------------------------------------------------------
 // State
@@ -37,7 +37,7 @@ let currentContainer: Element | null = null;
 // Selectors
 // ---------------------------------------------------------------------------
 
-const USER_MESSAGE_SEL = SELECTORS.user_message; // [data-testid="user-message"]
+const USER_MESSAGE_SEL = DEFAULT_SELECTORS.user_message; // [data-testid="user-message"]
 
 /**
  * Find the conversation container (turn list parent).
@@ -75,7 +75,7 @@ function findConversationContainer(): Element | null {
   }
 
   // Fallback: class-based selector from audit
-  return document.querySelector(SELECTORS.turn_list_parent);
+  return document.querySelector(DEFAULT_SELECTORS.turn_list_parent);
 }
 
 // ---------------------------------------------------------------------------
