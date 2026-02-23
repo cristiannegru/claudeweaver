@@ -2,27 +2,42 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { copyFileSync, mkdirSync, existsSync } from 'fs';
 
-const target = process.env.VITE_TARGET || (process.argv.includes('firefox') ? 'firefox' : 'chrome');
+// ============================================================
+// Two-pass build for web extension compatibility:
+//   Pass 1 (mode=firefox / chrome): background + sidebar (ES modules, code-splitting OK)
+//   Pass 2 (mode=firefox-content / chrome-content): content script (IIFE, self-contained)
+//
+// Build scripts run both passes sequentially.
+// ============================================================
 
-function getManifestSource(): string {
-  return target === 'firefox' ? 'src/manifest.v2.json' : 'src/manifest.v3.json';
+function getBuildTarget(mode: string): string {
+  return mode.startsWith('firefox') ? 'firefox' : 'chrome';
 }
 
-function getOutDir(): string {
-  return target === 'firefox' ? 'dist-firefox' : 'dist-chromium';
+function isContentBuild(mode: string): boolean {
+  return mode.endsWith('-content');
 }
 
-// Plugin to copy manifest + sidebar.html into dist
-function copyStaticAssets() {
+function getOutDir(mode: string): string {
+  return getBuildTarget(mode) === 'firefox' ? 'dist-firefox' : 'dist-chromium';
+}
+
+function getManifestSource(mode: string): string {
+  return getBuildTarget(mode) === 'firefox' ? 'src/manifest.v2.json' : 'src/manifest.v3.json';
+}
+
+function copyStaticAssets(mode: string) {
   return {
     name: 'copy-static-assets',
     closeBundle() {
-      const outDir = getOutDir();
+      // Only copy static assets on the app build (first pass), not content build
+      if (isContentBuild(mode)) return;
+
+      const outDir = getOutDir(mode);
       if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
-      copyFileSync(getManifestSource(), resolve(outDir, 'manifest.json'));
+      copyFileSync(getManifestSource(mode), resolve(outDir, 'manifest.json'));
       copyFileSync('src/sidebar/sidebar.html', resolve(outDir, 'sidebar.html'));
 
-      // Copy icon assets
       const assetsDir = resolve(outDir, 'assets');
       if (!existsSync(assetsDir)) mkdirSync(assetsDir, { recursive: true });
       for (const icon of ['icon-16.png', 'icon-48.png', 'icon-128.png']) {
@@ -34,10 +49,11 @@ function copyStaticAssets() {
 }
 
 export default defineConfig(({ mode }) => {
-  const buildTarget = mode === 'firefox' ? 'firefox' : 'chrome';
-  const outDir = buildTarget === 'firefox' ? 'dist-firefox' : 'dist-chromium';
+  const buildTarget = getBuildTarget(mode);
+  const outDir = getOutDir(mode);
+  const contentBuild = isContentBuild(mode);
 
-  return {
+  const shared = {
     define: {
       __PLATFORM__: JSON.stringify(buildTarget),
     },
@@ -49,6 +65,33 @@ export default defineConfig(({ mode }) => {
         '@background': resolve(__dirname, 'src/background'),
       },
     },
+    plugins: [copyStaticAssets(mode)],
+  };
+
+  if (contentBuild) {
+    // Pass 2: Content script only — IIFE, no code splitting, no imports
+    return {
+      ...shared,
+      build: {
+        outDir,
+        emptyOutDir: false, // Don't wipe pass 1 output
+        sourcemap: buildTarget === 'firefox' ? 'inline' : false,
+        rollupOptions: {
+          input: {
+            'content/content': resolve(__dirname, 'src/content/index.ts'),
+          },
+          output: {
+            entryFileNames: '[name].js',
+            format: 'iife',
+          },
+        },
+      },
+    };
+  }
+
+  // Pass 1: Background + Sidebar — ES modules, code splitting OK
+  return {
+    ...shared,
     build: {
       outDir,
       emptyOutDir: true,
@@ -56,7 +99,6 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           'background/service-worker': resolve(__dirname, 'src/background/service-worker.ts'),
-          'content/content': resolve(__dirname, 'src/content/index.ts'),
           'sidebar/sidebar': resolve(__dirname, 'src/sidebar/index.tsx'),
         },
         output: {
@@ -66,6 +108,5 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    plugins: [copyStaticAssets()],
   };
 });

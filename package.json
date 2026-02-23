@@ -6,14 +6,14 @@
   "scripts": {
     "dev:firefox": "vite build --watch --mode firefox",
     "dev:chrome": "vite build --watch --mode chrome",
+    "build:firefox": "vite build --mode firefox && vite build --mode firefox-content",
+    "build:chrome": "vite build --mode chrome && vite build --mode chrome-content",
     "build": "npm run build:firefox && npm run build:chrome",
-    "build:firefox": "vite build --mode firefox",
-    "build:chrome": "vite build --mode chrome",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/ --ext .ts,.tsx",
     "test": "vitest run",
     "test:watch": "vitest"
-  },
+	},
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
